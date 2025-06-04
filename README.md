@@ -11,17 +11,26 @@ Ensure all of the following are installed before setting up the application (UPD
 git clone https://github.com/dcgnecco/trolley-tracker-revamp.git
 cd trolley-tracker-revamp
 ```
-2. Install backend dependencies in the backend folder (UPDATE WHEN BACKEND IS ADDED):
-3. Install frontend dependencies in the frontend folder:
+2. Install backend dependencies in the backend folder (UPDATE WHEN BACKEND IS ADDED, virtual python env?):
 ```bash
+cd backend
+pip install -r requirements.txt
+```
+3. Run the backend (while in the backend folder):
+```bash
+python main.py
+```
+4. Install frontend dependencies in the frontend folder:
+```bash
+cd ..
 cd frontend
 npm install
 ```
-4. Run the frontend (while in the frontend folder):
+5. Run the frontend (while in the frontend folder):
 ```bash
 npm run dev
 ```
-5. View the webpage on the given localhost port (example):
+6. View the webpage on the given localhost port (example):
 ```bash
 http://localhost:5173/
 ```

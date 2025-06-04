@@ -1,7 +1,6 @@
-# Trolley Tracker
-
+#
 ## Installations
-Ensure all of the following are installed before running the application (UPDATE WHEN BACKEND IS ADDED):
+Ensure all of the following are installed before setting up the application (UPDATE WHEN BACKEND IS ADDED):
 - Node.js (and npm)
 - Python
 - Git

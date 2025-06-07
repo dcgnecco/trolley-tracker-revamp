@@ -5,31 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RouteToggle } from "@/components/ui/RouteToggle";
 import { StopSelector } from "@/components/ui/StopSelector";
+import { Map } from "@/components/ui/MAP";
 import { useState } from "react";
 
-// Stop List Arrays, WOULD GET THESE FROM BACKEND
+// Stop List Arrays, WOULD GET THESE FROM BACKEND(?)
 const northboundStops = [
-    "Dorsey Ln/Apache Blvd", "Rural Rd/Apache Blvd", "Paseo Del Saber/Apache Blvd",
-    "College Ave/Apache Blvd", "Eleventh St/Mill", "Ninth St/Mill",
-    "Sixth St/Mill", "Third St/Mill", "Hayden Ferry", "Marina Heights"
+  "Dorsey Ln/Apache Blvd", "Rural Rd/Apache Blvd", "Paseo Del Saber/Apache Blvd",
+  "College Ave/Apache Blvd", "Eleventh St/Mill", "Ninth St/Mill",
+  "Sixth St/Mill", "Third St/Mill", "Hayden Ferry", "Marina Heights"
 ]
 const southboundStops = [
-    "Marina Heights", "Hayden Ferry", "Tempe Beach Park", "3rd St/Ash Ave",
-    "5th St/Ash Ave", "University Dr/Ash Ave", "Ninth St/Mill",
-    "Eleventh St/Mill", "College Ave/Apache Blvd", "Paseo Del Saber/Apache Blvd",
-    "Rural Rd/Apache Blvd", "Dorsey Ln/Apache Blvd"
+  "Marina Heights", "Hayden Ferry", "Tempe Beach Park", "3rd St/Ash Ave",
+  "5th St/Ash Ave", "University Dr/Ash Ave", "Ninth St/Mill",
+  "Eleventh St/Mill", "College Ave/Apache Blvd", "Paseo Del Saber/Apache Blvd",
+  "Rural Rd/Apache Blvd", "Dorsey Ln/Apache Blvd"
 ]
 
 function App() {
   // Route selection variable
   const [route, setRoute] = useState("northbound");
+
   // Stop selection variables
-  const [selectedStop, setSelectedStop] = useState(null);
+  const [selectedStop, setSelectedStop] = useState("default");
   const stops = route === "northbound" ? northboundStops : southboundStops;
+
   // ETA variables, GET VALUE(S) FROM BACKEND
   const finalETA_1 = useState("1 min 43 sec");
   const finalETA_2 = useState("11 min 28 sec");
   const finalETA_3 = useState("21 min 19 sec");
+
   // Car variables, GET FROM BACKEND
   const [selectedCar, setSelectedCar] = useState(null);
   const availableCars = [
@@ -76,7 +80,10 @@ function App() {
           </div>
 
           {/* Stop List */}
-          <Label>STOPS</Label>
+          <div className="flex justify-between">
+            <Label className="text-sm font-medium">STOPS</Label>
+            <Button size="sm" variant="ghost" className="underline cursor-pointer">Use my Location</Button>
+          </div>
           <div className="flex-1 overflow-y-auto">
             <StopSelector stops={stops} selectedStop={selectedStop} onSelect={setSelectedStop} />
           </div>
@@ -149,7 +156,7 @@ function App() {
 
           {/* Actual Map (placeholder) */}
           <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
-            Map Here
+            <Map selectedStop={selectedStop} routeStops={stops} route={route}/>
           </div>
 
           {/* Ad/Ticketing Space */}
@@ -163,5 +170,7 @@ function App() {
     </div>
   )
 }
+
+
 
 export default App

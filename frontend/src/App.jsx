@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RouteToggle } from "@/components/ui/RouteToggle";
 import { StopSelector } from "@/components/ui/StopSelector";
 import { Map } from "@/components/ui/MAP";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Stop List Arrays, WOULD GET THESE FROM BACKEND(?)
 const northboundStops = [
@@ -29,10 +29,36 @@ function App() {
   const [selectedStop, setSelectedStop] = useState("default");
   const stops = route === "northbound" ? northboundStops : southboundStops;
 
-  // ETA variables, GET VALUE(S) FROM BACKEND
-  const finalETA_1 = useState("1 min 43 sec");
-  const finalETA_2 = useState("11 min 28 sec");
-  const finalETA_3 = useState("21 min 19 sec");
+  // ETA variables
+  const [finalETA, setFinalETA] = useState("ETA_PLACEHOLDER");
+
+  const handleSelectStop = async (stop) => {
+    setSelectedStop(stop);
+    
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/eta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          stop: stop,
+          route: route
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        setFinalETA(data.error); // set error message
+      } else if (data.eta_min != null && data.eta_sec != null) {
+        setFinalETA(`${data.eta_min} min ${data.eta_sec} sec`);
+      } else {
+        setFinalETA("ETA not available.");
+      }
+    
+    } catch (error) {
+      console.error("Error fetching ETA:", error);
+      setEta("ERROR");
+    }
+  };
 
   // Car variables, GET FROM BACKEND
   const [selectedCar, setSelectedCar] = useState(null);
@@ -85,7 +111,7 @@ function App() {
             <Button size="sm" variant="ghost" className="underline cursor-pointer">Use my Location</Button>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <StopSelector stops={stops} selectedStop={selectedStop} onSelect={setSelectedStop} />
+            <StopSelector stops={stops} selectedStop={selectedStop} onSelect={handleSelectStop} />
           </div>
 
           {/* ETA Card */}
@@ -96,13 +122,7 @@ function App() {
               </CardHeader>
               <CardContent className="text-center flex flex-col">
                 <div >
-                  {finalETA_1}
-                </div>
-                <div >
-                  {finalETA_2}
-                </div>
-                <div >
-                  {finalETA_3}
+                  {finalETA}
                 </div>
               </CardContent>
             </Card>
@@ -170,7 +190,5 @@ function App() {
     </div>
   )
 }
-
-
 
 export default App

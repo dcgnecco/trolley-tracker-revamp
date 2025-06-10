@@ -26,7 +26,7 @@ const stopsInOrder = [
 
 export function Map({ selectedStop, routeStops, route }) {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  
+
     // Map loading variables
     const mapRef = useRef(null);
     const polylineRef = useRef(null);
@@ -37,46 +37,60 @@ export function Map({ selectedStop, routeStops, route }) {
     const currentStops = routeStops.map((name) => stopsInOrder.find((stop) => stop.name === name));
     const currentZoom = selectedStop === "default" ? 14 : 16;
   
+    // Trolley location fetching
+    const TROLLEY_IMAGE = "/Trolley_Icon.png";
+    const [trolleyLocation, setTrolleyLocation] = useState({lat: 0, lng: 0});
+    useEffect(() => {
+        fetchTrolleyLocation()
+    }, []);
+    const fetchTrolleyLocation = async () => {
+        const response = await fetch("http://127.0.0.1:5000/api/trolley_location");
+        const data = await response.json();
+        console.log(data)
+        setTrolleyLocation(data);
+    };
+
     // Polyline redrawing function
     useEffect(() => {
-      if (!mapLoaded || !mapRef.current) return;
-      if (polylineRef.current) { polylineRef.current.setMap(null); }
+        if (!mapLoaded || !mapRef.current) return;
+        if (polylineRef.current) { polylineRef.current.setMap(null); }
   
-      const pathCoords = route === "northbound" ? northboundPathCoords : southboundPathCoords;
-      const color = route === "northbound" ? "#FF0000" : "#0000FF";
+        const pathCoords = route === "northbound" ? northboundPathCoords : southboundPathCoords;
+        const color = route === "northbound" ? "#FF0000" : "#0000FF";
   
-      const newPolyline = new window.google.maps.Polyline({
-        path: pathCoords,
-        geodesic: true,
-        strokeColor: color,
-        strokeOpacity: 1.0,
-        strokeWeight: 4,
-      });
+        const newPolyline = new window.google.maps.Polyline({
+            path: pathCoords,
+            geodesic: true,
+            strokeColor: color,
+            strokeOpacity: 1.0,
+            strokeWeight: 4,
+        });
   
-      newPolyline.setMap(mapRef.current);
-      polylineRef.current = newPolyline;
+        newPolyline.setMap(mapRef.current);
+        polylineRef.current = newPolyline;
     }, [route, mapLoaded]);
   
     return (
-      <LoadScript googleMapsApiKey={apiKey}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={{ lat: currentCenter.lat, lng: currentCenter.lng }}
-          zoom={currentZoom}
-          onLoad={(map) => {
-            mapRef.current = map;
-            setMapLoaded(true);
-          }}
-        >
-          {currentStops.map((stop) => (
-            <Marker key={stop.name} position={{ lat: stop.lat, lng: stop.lng }} />
-          ))}
-        </GoogleMap>
-      </LoadScript>
+        <LoadScript googleMapsApiKey={apiKey}>
+            <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={{ lat: currentCenter.lat, lng: currentCenter.lng }}
+                zoom={currentZoom}
+                onLoad={(map) => {
+                    mapRef.current = map;
+                    setMapLoaded(true);
+                }}>
+                {currentStops.map((stop) => (
+                    <Marker key={stop.name} position={{ lat: stop.lat, lng: stop.lng }} />
+                ))}
+                
+                <Marker icon={TROLLEY_IMAGE} position={{ lat: trolleyLocation.lat, lng: trolleyLocation.lng }} />
+            </GoogleMap>
+        </LoadScript>
     );
-  }
+}
 
-  const northboundPathCoords = [
+const northboundPathCoords = [
     {lat: 33.4146300, lng: -111.9169900},  // Dorsey Ln/Apache Blvd
     {lat: 33.41473867350939, lng: -111.91691110472115},
     {lat: 33.41468270207691, lng: -111.93685433565464},
@@ -121,10 +135,9 @@ export function Map({ selectedStop, routeStops, route }) {
     {lat: 33.42937753181339, lng: -111.93323301753931},
     {lat: 33.42936852845058, lng: -111.93270206451416},
     {lat: 33.4293200, lng: -111.9327200},  // Marina Heights
-    
-  ];
+];
   
-  const southboundPathCoords = [
+const southboundPathCoords = [
     {lat: 33.4293200, lng: -111.9327200},  // Marina Heights
     {lat: 33.42945825139364, lng: -111.9335934955798},
     {lat: 33.42953100186674, lng: -111.93383623549565},
@@ -253,4 +266,4 @@ export function Map({ selectedStop, routeStops, route }) {
     {lat: 33.414760840958145, lng: -111.92584156061946},
     {lat: 33.41474069125175, lng: -111.92023976709186},
     {lat: 33.4146300, lng: -111.9169900}  // Dorsey Ln/Apache Blvd
-  ];
+];

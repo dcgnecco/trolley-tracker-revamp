@@ -174,7 +174,7 @@ function App() {
             )}
           </div>
 
-          {/* Actual Map (placeholder) */}
+          {/* Map */}
           <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
             <Map selectedStop={selectedStop} routeStops={stops} route={route}/>
           </div>
@@ -182,7 +182,7 @@ function App() {
           {/* Ad/Ticketing Space */}
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[80%]">
             <div className="bg-white dark:bg-zinc-900 px-6 py-4 h-20">
-              <p className="text-sm text-center text-gray-600 dark:text-gray-300">Ad/Ticketing Space</p>
+              <p className="text-sm text-center text-gray-600 dark:text-gray-300">Ticketing Space</p>
             </div>
           </div>
         </main>

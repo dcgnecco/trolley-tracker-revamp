@@ -49,6 +49,13 @@ export function Map({ selectedStop, routeStops, route }) {
         console.log(data)
         setTrolleyLocation(data);
     };
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchTrolleyLocation();
+        }, 5000); // Fetch every 5 seconds
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Polyline redrawing function
     useEffect(() => {

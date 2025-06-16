@@ -7,7 +7,7 @@ const containerStyle = {
 };
 
 const stopsInOrder = [
-    { id: 0, name: "default", lat: 33.4255, lng: -111.9400 },
+    { id: 0, name: "default", lat: 33.423002, lng: -111.9304055 },
     { id: 1, name: "Dorsey Ln/Apache Blvd", lat: 33.4146300, lng: -111.9169900 },
     { id: 2, name: "Rural Rd/Apache Blvd", lat: 33.4147800, lng: -111.9252400 },
     { id: 3, name: "Paseo Del Saber/Apache Blvd", lat: 33.4147500, lng: -111.9293900 },
@@ -24,7 +24,7 @@ const stopsInOrder = [
     { id: 14, name: "University Dr/Ash Ave", lat: 33.4223700, lng: -111.9425400 }
 ];
 
-export function Map({ selectedStop, routeStops, route, trolleyLocations }) {
+export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocations, onStopMarkerSelect, onTrolleyMarkerSelect }) {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     const TROLLEY_IMAGE = "/Trolley_Icon.png";
 
@@ -33,19 +33,26 @@ export function Map({ selectedStop, routeStops, route, trolleyLocations }) {
     const polylineRef = useRef(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
-    // Map functionality variables
+    // Map display variables
     const currentStops = routeStops.map((name) => stopsInOrder.find((stop) => stop.name === name));
-    useEffect(() => {
-        if (!mapLoaded || !mapRef.current) return;
-  
-        const stop = stopsInOrder.find((s) => s.name === selectedStop);
-        if (stop) {
-            mapRef.current.setCenter({ lat: stop.lat, lng: stop.lng });
-            mapRef.current.setZoom(selectedStop === "default" ? 14 : 16);
+    const [labeledStop, setLabeledStop] = useState(null);
+
+    // MAP CENTERING
+    const recenterMap = (lat, lng, zoom = 16) => {
+        if (mapLoaded && mapRef.current) {
+            mapRef.current.setCenter({ lat, lng });
+            mapRef.current.setZoom(zoom);
         }
+    };
+    useEffect(() => {  // Recenter when a stop is selected from sidebar
+        const stop = stopsInOrder.find((s) => s.name === selectedStop);
+        if (stop) { recenterMap(stop.lat, stop.lng, selectedStop === "default" ? 15 : 16); }
     }, [selectedStop, mapLoaded]);
+    useEffect(() => {  // Recenter when a car is selected from sidebar
+        if (selectedCar) { recenterMap(selectedCar.lat, selectedCar.lng, 16); }
+    }, [selectedCar, mapLoaded]);
     
-    // Polyline redrawing function
+    // POLYLINE DRAWING
     useEffect(() => {
         if (!mapLoaded || !mapRef.current) return;
         if (polylineRef.current) { polylineRef.current.setMap(null); }
@@ -74,10 +81,25 @@ export function Map({ selectedStop, routeStops, route, trolleyLocations }) {
                     setMapLoaded(true);
                 }}>
                 {currentStops.map((stop) => (
-                    <Marker key={stop.name} position={{ lat: stop.lat, lng: stop.lng }} />
+                    <Marker
+                        key={stop.name}
+                        position={{ lat: stop.lat, lng: stop.lng }}
+                        onClick={() => {
+                            recenterMap(stop.lat, stop.lng);
+                            //setLabeledStop(stop.name);
+                            onStopMarkerSelect(stop.name);
+                        }}
+                        label={ labeledStop === stop.name ? { text: stop.name, color: "#000", fontSize: "14px", fontWeight: "bold" } : undefined }/>
                 ))}
                 {trolleyLocations.map(({ id, lat, lng }) => (
-                    <Marker key={id} position={{ lat: lat, lng: lng }} icon={TROLLEY_IMAGE} />
+                    <Marker
+                        key={id}
+                        position={{ lat: lat, lng: lng }}
+                        icon={TROLLEY_IMAGE}
+                        onClick={() => {
+                            recenterMap(lat, lng);
+                            onTrolleyMarkerSelect(id);
+                        }} />
                 ))}
             </GoogleMap>
         </LoadScript>

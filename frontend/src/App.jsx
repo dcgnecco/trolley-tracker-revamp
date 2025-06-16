@@ -76,14 +76,15 @@ function App() {
       return () => clearInterval(interval);
   }, []);
 
-  // Car variables, GET FROM BACKEND
+  // Car variables
   const [selectedCar, setSelectedCar] = useState(null);
-  const availableCars = [
-    { carName: "Car 1", route: "Northbound", nextStops: ["Stop 1", "Stop 2", "Stop 3"]},
-    { carName: "Car 2", route: "Southbound", nextStops: ["Stop 4", "Stop 5", ""]}
+  const availableCars = [ //placeholder values
+    { carId: 181, route: "Northbound", nextStops: ["Stop 1", "Stop 2", "Stop 3"]},
+    { carId: 182, route: "Southbound", nextStops: ["Stop 4", "Stop 5", ""]}
   ];
-  const selectCar = (carName) => {
-    const selected = availableCars.find((car) => car.carName === carName);
+  const selectCar = (carId) => {
+    const selected = trolleyLocations.find((car) => car.id === carId);
+    //console.log("car id " + carId + " selected")
     setSelectedCar(selected || null);
   };
 
@@ -163,28 +164,28 @@ function App() {
               <Label className="py-2 block">CAR</Label>
               <Select onValueChange={selectCar}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a Car" />
+                  <SelectValue placeholder="Select a Car">{selectedCar && selectedCar.id}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {availableCars.map((car) => (
-                    <SelectItem key={car.carName} value={car.carName}>{car.carName}</SelectItem>
+                  {trolleyLocations.map((car) => (
+                    <SelectItem key={car.id} value={car.id}>{car.id}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Route + Upcoming Stops */}
+            {/* Route + Upcoming Stops, PLACEHOLDERS FOR NOW */}
             {selectedCar != null && (
               <div>
                 <div className="p-4">
                   <Label className="py-2 block">ROUTE</Label>
-                  {selectedCar.route}
+                  {/* selectedCar.route */}Northbound
                 </div>
                 <div className="p-4">
                   <Label className="py-2 block">UPCOMING STOPS</Label>
-                  <div>{selectedCar.nextStops[0]}</div>
-                  <div>{selectedCar.nextStops[1]}</div>
-                  <div>{selectedCar.nextStops[2]}</div>
+                  <div>{/* selectedCar.nextStops[0] */}Stop 1</div>
+                  <div>{/* selectedCar.nextStops[1] */}Stop 2</div>
+                  <div>{/* selectedCar.nextStops[2] */}Stop 3</div>
                 </div>
               </div>
             )}
@@ -192,7 +193,12 @@ function App() {
 
           {/* Map */}
           <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
-            <Map selectedStop={selectedStop} routeStops={stops} route={route} trolleyLocations={trolleyLocations}/>
+            <Map
+              selectedStop={selectedStop} selectedCar={selectedCar}
+              routeStops={stops} route={route}
+              trolleyLocations={trolleyLocations}
+              onStopMarkerSelect={handleSelectStop} onTrolleyMarkerSelect={selectCar}
+            />
           </div>
 
           {/* Ad/Ticketing Space */}

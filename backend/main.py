@@ -19,6 +19,7 @@ import time
 import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from models import Trolley
 
 # ----------------------------
 # CONSTANTS
@@ -34,8 +35,11 @@ ZONES = {
 }
 
 # ----------------------------
-# STATIC META: Stops, Routes, Paths
+# STATIC META: Active Trolley Ids, Stops, Routes, Paths
 # ----------------------------
+
+# List of integer ids of active trolleys being tracked
+ACTIVE_TROLLEY_IDS = [181, 182, 183, 184, 185]
 
 # List of stops in fixed order with unique id, name, and geographic coordinates (latitude, longitude)
 STOPS_IN_ORDER = [
@@ -421,15 +425,18 @@ def zone_label(distance_miles):
 # TROLLEY DATA FETCHING
 # ----------------------------
 
-def fetch_trolley_location():
+def fetch_trolley_location(vehicle_id):
     """
     Fetch the live location of the trolley from the Firebase endpoint.
+
+    Args:
+        Integer for the vehicle id number (currently 181-185)
 
     Returns:
         Dict with keys 'lat' and 'lng' if successful,
         or None if data unavailable or malformed.
     """
-    url = "https://fir-realtimedata-9fab9-default-rtdb.firebaseio.com/vehicles/184.json"
+    url = "https://fir-realtimedata-9fab9-default-rtdb.firebaseio.com/vehicles/"+str(vehicle_id)+".json"
     try:
         resp = requests.get(url)
         data = resp.json()
@@ -501,6 +508,10 @@ def calc_eta_to_stop(
     eta_seconds = distance_meters / speed_mps
     eta_min = int(eta_seconds // 60)
     eta_sec = int(round(eta_seconds % 60))
+    if eta_sec == 60:
+        eta_sec = 0
+        eta_min = eta_min + 1
+
     zone = zone_label(distance_miles)
 
     auto_dir = None
@@ -562,6 +573,24 @@ def api_eta():
         prev_location=prev_location
     )
     return jsonify(result)
+
+# !!!!! !!!!!
+@app.route('/api/active_trolley_locations', methods=['GET'])
+def api_active_trolley_locations():
+    """
+    REST API endpoint to get the real-time locations of all active trolleys.
+
+    Returns:
+        JSON array of 'id', 'lat', and 'lng' values for each active trolley
+    """
+    trolleys = []
+
+    for id in ACTIVE_TROLLEY_IDS:
+        location = fetch_trolley_location(id)
+        if location:    
+            trolleys.append({"id": id, "lat": location["lat"], "lng": location["lng"]})
+        
+    return jsonify(trolleys)
 
 # !!!!! !!!!!
 @app.route('/api/stops', methods=['GET'])

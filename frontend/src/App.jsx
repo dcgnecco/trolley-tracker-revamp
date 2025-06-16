@@ -29,9 +29,8 @@ function App() {
   const [selectedStop, setSelectedStop] = useState("default");
   const stops = route === "northbound" ? northboundStops : southboundStops;
 
-  // ETA variables
+  // ETA fetching
   const [finalETA, setFinalETA] = useState("ETA_PLACEHOLDER");
-
   const handleSelectStop = async (stop) => {
     setSelectedStop(stop);
     
@@ -59,6 +58,23 @@ function App() {
       setEta("ERROR");
     }
   };
+
+  // Trolley location fetching
+  const [trolleyLocations, setTrolleyLocations] = useState([]);
+  const fetchTrolleyLocations = async () => {
+      const response = await fetch("http://127.0.0.1:5000/api/active_trolley_locations");
+      const data = await response.json();
+      console.log(data)
+      setTrolleyLocations(data);
+  };
+  useEffect(() => { fetchTrolleyLocations(); }, []);
+  useEffect(() => {
+      const interval = setInterval(() => {
+          fetchTrolleyLocations();
+      }, 5000); // Fetch every 5 seconds
+  
+      return () => clearInterval(interval);
+  }, []);
 
   // Car variables, GET FROM BACKEND
   const [selectedCar, setSelectedCar] = useState(null);
@@ -176,7 +192,7 @@ function App() {
 
           {/* Map */}
           <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
-            <Map selectedStop={selectedStop} routeStops={stops} route={route}/>
+            <Map selectedStop={selectedStop} routeStops={stops} route={route} trolleyLocations={trolleyLocations}/>
           </div>
 
           {/* Ad/Ticketing Space */}

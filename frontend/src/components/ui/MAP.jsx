@@ -24,39 +24,27 @@ const stopsInOrder = [
     { id: 14, name: "University Dr/Ash Ave", lat: 33.4223700, lng: -111.9425400 }
 ];
 
-export function Map({ selectedStop, routeStops, route }) {
+export function Map({ selectedStop, routeStops, route, trolleyLocations }) {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const TROLLEY_IMAGE = "/Trolley_Icon.png";
 
     // Map loading variables
     const mapRef = useRef(null);
     const polylineRef = useRef(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
-    // Map function variables
-    const currentCenter = stopsInOrder.find((stop) => stop.name === selectedStop);
+    // Map functionality variables
     const currentStops = routeStops.map((name) => stopsInOrder.find((stop) => stop.name === name));
-    const currentZoom = selectedStop === "default" ? 14 : 16;
+    useEffect(() => {
+        if (!mapLoaded || !mapRef.current) return;
   
-    // Trolley location fetching
-    const TROLLEY_IMAGE = "/Trolley_Icon.png";
-    const [trolleyLocation, setTrolleyLocation] = useState({lat: 0, lng: 0});
-    useEffect(() => {
-        fetchTrolleyLocation()
-    }, []);
-    const fetchTrolleyLocation = async () => {
-        const response = await fetch("http://127.0.0.1:5000/api/trolley_location");
-        const data = await response.json();
-        console.log(data)
-        setTrolleyLocation(data);
-    };
-    useEffect(() => {
-        const interval = setInterval(() => {
-            fetchTrolleyLocation();
-        }, 5000); // Fetch every 5 seconds
-
-        return () => clearInterval(interval);
-    }, []);
-
+        const stop = stopsInOrder.find((s) => s.name === selectedStop);
+        if (stop) {
+            mapRef.current.setCenter({ lat: stop.lat, lng: stop.lng });
+            mapRef.current.setZoom(selectedStop === "default" ? 14 : 16);
+        }
+    }, [selectedStop, mapLoaded]);
+    
     // Polyline redrawing function
     useEffect(() => {
         if (!mapLoaded || !mapRef.current) return;
@@ -81,8 +69,6 @@ export function Map({ selectedStop, routeStops, route }) {
         <LoadScript googleMapsApiKey={apiKey}>
             <GoogleMap
                 mapContainerStyle={containerStyle}
-                center={{ lat: currentCenter.lat, lng: currentCenter.lng }}
-                zoom={currentZoom}
                 onLoad={(map) => {
                     mapRef.current = map;
                     setMapLoaded(true);
@@ -90,8 +76,9 @@ export function Map({ selectedStop, routeStops, route }) {
                 {currentStops.map((stop) => (
                     <Marker key={stop.name} position={{ lat: stop.lat, lng: stop.lng }} />
                 ))}
-                
-                <Marker icon={TROLLEY_IMAGE} position={{ lat: trolleyLocation.lat, lng: trolleyLocation.lng }} />
+                {trolleyLocations.map(({ id, lat, lng }) => (
+                    <Marker key={id} position={{ lat: lat, lng: lng }} icon={TROLLEY_IMAGE} />
+                ))}
             </GoogleMap>
         </LoadScript>
     );

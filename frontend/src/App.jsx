@@ -8,7 +8,7 @@ import { StopSelector } from "@/components/ui/StopSelector";
 import { Map } from "@/components/ui/MAP";
 import { useState, useEffect } from "react";
 
-// Stop List Arrays, WOULD GET THESE FROM BACKEND(?)
+// Stop List Arrays
 const northboundStops = [
   "Dorsey Ln/Apache Blvd", "Rural Rd/Apache Blvd", "Paseo Del Saber/Apache Blvd",
   "College Ave/Apache Blvd", "Eleventh St/Mill", "Ninth St/Mill",
@@ -22,18 +22,19 @@ const southboundStops = [
 ]
 
 function App() {
-  // Route selection variable
-  const [route, setRoute] = useState("northbound");
 
-  // Stop selection variables
-  const [selectedStop, setSelectedStop] = useState("default");
-  const stops = route === "northbound" ? northboundStops : southboundStops;
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Car selection sidebar state; boolean (open or closed)
 
-  // ETA fetching
-  const [finalETA, setFinalETA] = useState("ETA_PLACEHOLDER");
+  const [route, setRoute] = useState("northbound"); // Currently selected route; string, "northbound" or "southbound"
+  const [selectedStop, setSelectedStop] = useState("default"); // Currently selected stop name; string
+  const stops = route === "northbound" ? northboundStops : southboundStops; // Current list of stops given the selected route; array of strings
+
+  // ***** ETA FETCHING *****
+  const [finalETA, setFinalETA] = useState("ETA_PLACEHOLDER"); // Final calcualted ETA; string
   const handleSelectStop = async (stop) => {
-    setSelectedStop(stop);
-    
+    setSelectedStop(stop); // Update the currently selected stop variable
+
+    // Send a request containing the selected stop and route to the backend API
     try {
       const response = await fetch("http://127.0.0.1:5000/api/eta", {
         method: "POST",
@@ -48,49 +49,44 @@ function App() {
       if (data.error) {
         setFinalETA(data.error); // set error message
       } else if (data.eta_min != null && data.eta_sec != null) {
-        setFinalETA(`${data.eta_min} min ${data.eta_sec} sec`);
+        setFinalETA(`${data.eta_min} min ${data.eta_sec} sec`); // Convert response to string with minutes and seconds
       } else {
         setFinalETA("ETA not available.");
       }
     
     } catch (error) {
-      console.error("Error fetching ETA:", error);
+      console.error("Error fetching ETA: ", error);
       setEta("ERROR");
     }
   };
 
-  // Trolley location fetching
-  const [trolleyLocations, setTrolleyLocations] = useState([]);
+  // ***** TROLLEY LOCATION FETCHING *****
+  const [trolleyLocations, setTrolleyLocations] = useState([]); // Stores the location data associated with each trolley, array of {car id, lat, lng}
   const fetchTrolleyLocations = async () => {
+      // Send a request to the backend API
       const response = await fetch("http://127.0.0.1:5000/api/active_trolley_locations");
       const data = await response.json();
       console.log(data)
       setTrolleyLocations(data);
   };
+  // Fetch the locations upon page loading and every 5 seconds
   useEffect(() => { fetchTrolleyLocations(); }, []);
   useEffect(() => {
       const interval = setInterval(() => {
           fetchTrolleyLocations();
-      }, 5000); // Fetch every 5 seconds
-  
+      }, 5000); 
       return () => clearInterval(interval);
   }, []);
 
-  // Car variables
-  const [selectedCar, setSelectedCar] = useState(null);
-  const availableCars = [ //placeholder values
-    { carId: 181, route: "Northbound", nextStops: ["Stop 1", "Stop 2", "Stop 3"]},
-    { carId: 182, route: "Southbound", nextStops: ["Stop 4", "Stop 5", ""]}
-  ];
+  // ***** TROLLEY SELECTING *****
+  const [selectedCar, setSelectedCar] = useState(null); // Stores the trolley selected by the user, {car id, lat, lng}
   const selectCar = (carId) => {
     const selected = trolleyLocations.find((car) => car.id === carId);
     //console.log("car id " + carId + " selected")
     setSelectedCar(selected || null);
   };
 
-  // Drawer state variable
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
+  // ***** PAGE HTML *****
   return (
     <div className="h-screen flex flex-col">
       {/* Page Header */}
@@ -195,8 +191,7 @@ function App() {
           <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-300">
             <Map
               selectedStop={selectedStop} selectedCar={selectedCar}
-              routeStops={stops} route={route}
-              trolleyLocations={trolleyLocations}
+              routeStops={stops} route={route} trolleyLocations={trolleyLocations}
               onStopMarkerSelect={handleSelectStop} onTrolleyMarkerSelect={selectCar}
             />
           </div>

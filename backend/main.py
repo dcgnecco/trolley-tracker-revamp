@@ -38,7 +38,7 @@ ZONES = {
 # STATIC META: Active Trolley Ids, Stops, Routes, Paths
 # ----------------------------
 
-# List of integer ids of active trolleys being tracked
+# !!!!!!!!!!! IMPORTANT: List of integer ids of active trolleys being tracked !!!!!!!!!!
 ACTIVE_TROLLEY_IDS = [181, 182, 183, 184, 185]
 
 # List of stops in fixed order with unique id, name, and geographic coordinates (latitude, longitude)

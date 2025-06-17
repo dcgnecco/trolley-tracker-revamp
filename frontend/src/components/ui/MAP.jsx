@@ -28,17 +28,18 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     const TROLLEY_IMAGE = "/Trolley_Icon.png";
 
+    // Associates the list of stop names for the given route with their latitude and longitudes; array of {stop id, name, lat, lng}
+    const currentStops = routeStops.map((name) => stopsInOrder.find((stop) => stop.name === name));
+    const [labeledStop, setLabeledStop] = useState(null);
+
     // Map loading variables
     const mapRef = useRef(null);
     const polylineRef = useRef(null);
     const [mapLoaded, setMapLoaded] = useState(false);
 
-    // Map display variables
-    const currentStops = routeStops.map((name) => stopsInOrder.find((stop) => stop.name === name));
-    const [labeledStop, setLabeledStop] = useState(null);
 
-    // MAP CENTERING
-    const recenterMap = (lat, lng, zoom = 16) => {
+    // ***** MAP CENTERING ******
+    const recenterMap = (lat, lng, zoom = 16) => { 
         if (mapLoaded && mapRef.current) {
             mapRef.current.setCenter({ lat, lng });
             mapRef.current.setZoom(zoom);
@@ -52,7 +53,7 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
         if (selectedCar) { recenterMap(selectedCar.lat, selectedCar.lng, 16); }
     }, [selectedCar, mapLoaded]);
     
-    // POLYLINE DRAWING
+    // ***** POLYLINE DRAWING *****
     useEffect(() => {
         if (!mapLoaded || !mapRef.current) return;
         if (polylineRef.current) { polylineRef.current.setMap(null); }
@@ -71,7 +72,8 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
         newPolyline.setMap(mapRef.current);
         polylineRef.current = newPolyline;
     }, [route, mapLoaded]);
-  
+    
+    // ***** MAP HTML *****
     return (
         <LoadScript googleMapsApiKey={apiKey}>
             <GoogleMap
@@ -80,6 +82,8 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
                     mapRef.current = map;
                     setMapLoaded(true);
                 }}>
+
+                {/* Stop markers */}
                 {currentStops.map((stop) => (
                     <Marker
                         key={stop.name}
@@ -91,6 +95,8 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
                         }}
                         label={ labeledStop === stop.name ? { text: stop.name, color: "#000", fontSize: "14px", fontWeight: "bold" } : undefined }/>
                 ))}
+
+                {/* Trolley markers */}
                 {trolleyLocations.map(({ id, lat, lng }) => (
                     <Marker
                         key={id}
@@ -106,6 +112,7 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
     );
 }
 
+// Path coords (for polyline drawing)
 const northboundPathCoords = [
     {lat: 33.4146300, lng: -111.9169900},  // Dorsey Ln/Apache Blvd
     {lat: 33.41473867350939, lng: -111.91691110472115},

@@ -22,6 +22,7 @@ const southboundStops = [
 ]
 
 function App() {
+  const API_BASE = "https://ontimetracking-d78eaf6faa9c.herokuapp.com"
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Car selection sidebar state; boolean (open or closed)
 
@@ -36,7 +37,7 @@ function App() {
 
     // Send a request containing the selected stop and route to the backend API
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/eta", {
+      const response = await fetch("${API_BASE}/api/eta", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,7 +65,7 @@ function App() {
   const [trolleyLocations, setTrolleyLocations] = useState([]); // Stores the location data associated with each trolley, array of {car id, lat, lng}
   const fetchTrolleyLocations = async () => {
       // Send a request to the backend API
-      const response = await fetch("http://127.0.0.1:5000/api/active_trolley_locations");
+      const response = await fetch("${API_BASE}/api/active_trolley_locations");
       const data = await response.json();
       console.log(data)
       setTrolleyLocations(data);

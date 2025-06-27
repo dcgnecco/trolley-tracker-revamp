@@ -67,7 +67,7 @@ function App() {
       // Send a request to the backend API
       const response = await fetch(`${API_BASE}/api/active_trolley_locations`);
       const data = await response.json();
-      console.log(data)
+      //console.log(data)
       setTrolleyLocations(data);
   };
   // Fetch the locations upon page loading and every 5 seconds

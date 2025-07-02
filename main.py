@@ -39,7 +39,7 @@ ZONES = {
 # ----------------------------
 
 # !!!!!!!!!!! IMPORTANT: List of integer ids of active trolleys being tracked !!!!!!!!!!
-ACTIVE_TROLLEY_IDS = [181, 182, 183, 184, 185]
+ACTIVE_TROLLEY_IDS = [180, 181, 182, 183, 184, 185, 186, 187, 188, 189]
 
 # List of stops in fixed order with unique id, name, and geographic coordinates (latitude, longitude)
 STOPS_IN_ORDER = [
@@ -454,6 +454,46 @@ def fetch_trolley_location(vehicle_id):
             return None
     return None
 
+def fetch_trolley_locations_from_VM(vehicle_id):
+    """
+    Fetch the live location of the trolley from the Valley Metro API
+
+    Args:
+        Integer for the vehicle id number (currently 181-185)
+
+    Returns:
+        Dict with keys 'lat' and 'lng' if successful,
+        or None if data unavailable or malformed.
+    """
+    url = "https://mna.mecatran.com/utw/ws/gtfsfeed/vehicles/valleymetro?apiKey=4f22263f69671d7f49726c3011333e527368211f&asJson=true"
+    try:
+        resp = requests.get(url)
+        data = resp.json()
+    except Exception:
+        # Could not fetch or decode JSON data
+        return None
+
+    if data:
+        trolleys = []
+        for e in data["entity"]:
+            vehicle_id = int(e["vehicle"]["vehicle"]["id"])
+            #if vehicle_id in ACTIVE_TROLLEY_IDS
+            if vehicle_id > 180 and vehicle_id < 190:
+                trolleys.append({"id": vehicle_id,
+                                 "lat": e["vehicle"]["position"]["latitude"],
+                                 "lng": e["vehicle"]["position"]["longitude"],
+                                 "dir": e["vehicle"]["trip"]["directionId"]})
+        return trolleys
+
+    #if data and "latitude" in data and "longitude" in data:
+        #try:
+            #return {
+                #"lat": float(data["latitude"]),
+                #"lng": float(data["longitude"])
+            #}
+        #except (ValueError, TypeError):
+            #return None
+    return None
 
 # ----------------------------
 # ETA and Tracker Logic
@@ -589,6 +629,24 @@ def api_active_trolley_locations():
         location = fetch_trolley_location(id)
         if location:    
             trolleys.append({"id": id, "lat": location["lat"], "lng": location["lng"]})
+        
+    return jsonify(trolleys)
+
+# !!!!! !!!!!
+@app.route('/api/trolley_locations_VM', methods=['GET'])
+def api_trolley_locations_VM():
+    """
+    REST API endpoint to get the real-time locations of all active trolleys.
+
+    Returns:
+        JSON array of 'id', 'lat', and 'lng' values for each active trolley
+    """
+    trolleys = fetch_trolley_locations_from_VM(1)
+
+    #for id in ACTIVE_TROLLEY_IDS:
+        #location = fetch_trolley_location(id)
+        #if location:    
+            #trolleys.append({"id": id, "lat": location["lat"], "lng": location["lng"]})
         
     return jsonify(trolleys)
 

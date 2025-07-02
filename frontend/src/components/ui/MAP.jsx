@@ -97,7 +97,9 @@ export function Map({ selectedStop, selectedCar, routeStops, route, trolleyLocat
                 ))}
 
                 {/* Trolley markers */}
-                {trolleyLocations.map(({ id, lat, lng }) => (
+                {trolleyLocations
+                .filter(t => t.dir === (route === "northbound" ? 0 : 1))
+                .map(({ id, lat, lng }) => (
                     <Marker
                         key={id}
                         position={{ lat: lat, lng: lng }}

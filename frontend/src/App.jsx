@@ -22,13 +22,15 @@ const southboundStops = [
 ]
 
 function App() {
-  const API_BASE = "https://ontimetracking-d78eaf6faa9c.herokuapp.com"
+  //const API_BASE = "https://ontimetracking-d78eaf6faa9c.herokuapp.com"
+  const API_BASE = "http://127.0.0.1:5000"
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Car selection sidebar state; boolean (open or closed)
 
   const [route, setRoute] = useState("northbound"); // Currently selected route; string, "northbound" or "southbound"
   const [selectedStop, setSelectedStop] = useState("default"); // Currently selected stop name; string
   const stops = route === "northbound" ? northboundStops : southboundStops; // Current list of stops given the selected route; array of strings
+  
 
   // ***** ETA FETCHING *****
   const [finalETA, setFinalETA] = useState("ETA_PLACEHOLDER"); // Final calcualted ETA; string
@@ -61,11 +63,13 @@ function App() {
     }
   };
 
+
   // ***** TROLLEY LOCATION FETCHING *****
-  const [trolleyLocations, setTrolleyLocations] = useState([]); // Stores the location data associated with each trolley, array of {car id, lat, lng}
+  const [trolleyLocations, setTrolleyLocations] = useState([]); // Stores the location data associated with each trolley, array of {car id, lat, lng, direction}
   const fetchTrolleyLocations = async () => {
       // Send a request to the backend API
-      const response = await fetch(`${API_BASE}/api/active_trolley_locations`);
+      //const response = await fetch(`${API_BASE}/api/active_trolley_locations`);
+      const response = await fetch(`${API_BASE}/api/trolley_locations_VM`);
       const data = await response.json();
       //console.log(data)
       setTrolleyLocations(data);
@@ -79,13 +83,16 @@ function App() {
       return () => clearInterval(interval);
   }, []);
 
+
   // ***** TROLLEY SELECTING *****
-  const [selectedCar, setSelectedCar] = useState(null); // Stores the trolley selected by the user, {car id, lat, lng}
+  const [selectedCar, setSelectedCar] = useState(null); // Stores the trolley selected by the user, {car id, lat, lng, direction}
   const selectCar = (carId) => {
     const selected = trolleyLocations.find((car) => car.id === carId);
     //console.log("car id " + carId + " selected")
+    setRoute(selected.dir === 0 ? "northbound" : "southbound")
     setSelectedCar(selected || null);
   };
+
 
   // ***** PAGE HTML *****
   return (
@@ -176,7 +183,7 @@ function App() {
               <div>
                 <div className="p-4">
                   <Label className="py-2 block">ROUTE</Label>
-                  {/* selectedCar.route */}Northbound
+                  {selectedCar.dir === 0 ? "Northbound" : "Southbound"}
                 </div>
                 <div className="p-4">
                   <Label className="py-2 block">UPCOMING STOPS</Label>

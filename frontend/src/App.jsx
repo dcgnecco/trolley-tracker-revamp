@@ -22,8 +22,8 @@ const southboundStops = [
 ]
 
 function App() {
-  //const API_BASE = "https://ontimetracking-d78eaf6faa9c.herokuapp.com"
-  const API_BASE = "http://127.0.0.1:5000"
+  const API_BASE = "https://ontimetracking-d78eaf6faa9c.herokuapp.com"
+  //const API_BASE = "http://127.0.0.1:5000"
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Car selection sidebar state; boolean (open or closed)
 
